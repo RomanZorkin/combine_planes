@@ -21,13 +21,8 @@ def shift_estimation(image_arr: np.array, conf: ImageConf, num: int) -> tuple[np
     Функция производит расчет смещения цветовых каналов от зеленогою в выбранном участке\n
     изображения.
     """
-    box = conf.box[num]
-    print(box)
-    chunk_img = image_arr[
-        box.xt:box.xb,
-        box.yl:box.yr,
-        :,
-    ].copy()
+    box = conf.box[num]    
+    chunk_img = image_arr[box.xt:box.xb, box.yl:box.yr, :].copy()
     chunk_img_r = chunk_img[:,:,conf.channels.red].copy()
     chunk_img_g = chunk_img[:,:,conf.channels.green].copy()
     chunk_img_b = chunk_img[:,:,conf.channels.blue].copy()
@@ -38,24 +33,20 @@ def shift_estimation(image_arr: np.array, conf: ImageConf, num: int) -> tuple[np
     return warp_matrix_r, warp_matrix_b
 
 
-def make_warps(conf: ImageConf) -> None:
+def make_warps(image: np.ndarray, conf: ImageConf) -> None:
     """Функция расчета матриц смещения по всем заданным участкам изображения."""
-
-    image = cv2.cvtColor(cv2.imread(conf.path), cv2.COLOR_BGR2RGB)
+    
     warps = [[],[]]
-
     for num in range(len(conf.box)):
         warp_matrix_r, warp_matrix_b  = shift_estimation(image, conf, num)
         warps[0].append(warp_matrix_r)
         warps[1].append(warp_matrix_b)
+    warp_mean(warps, conf)    
 
-    warp_mean(warps, conf)
 
-
-def convert_image(conf: ImageConf) -> np.array:
+def convert_image(image: np.array, conf: ImageConf) -> np.array:
     """Функция преобразования изображения на основе матриц смещения цветовых каналов."""
-
-    image = cv2.cvtColor(cv2.imread(conf.path), cv2.COLOR_BGR2RGB)
+   
     height, width , _ = image.shape
 
     new_img = np.zeros(image.shape, dtype=np.uint8)
@@ -72,5 +63,5 @@ def convert_image(conf: ImageConf) -> np.array:
         conf.warp.blue,
         (width, height),
         flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP,
-    )
+    )    
     return new_img
