@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 import cv2
 import numpy as np
@@ -35,3 +35,29 @@ class ImageConf(BaseModel):
     box: list[WindowBox] = [WindowBox()]
     warp: Warp = Warp()
 
+
+class Coordinates(BaseModel):
+    x: int = 0  # noqa:WPS111
+    y: int = 0  # noqa:WPS111
+
+
+class BoxMid(BaseModel):
+    top: Coordinates = Coordinates()
+    bottom: Coordinates = Coordinates()
+    left: Coordinates = Coordinates()
+    right: Coordinates = Coordinates()
+
+
+class BoxCoord(BaseModel):
+    box: Any
+    mid: BoxMid = BoxMid()
+    center: Coordinates = Coordinates()
+    width: float = 0
+    height: float = 0
+    ratio: float = 0
+
+
+class ScaleConf(BaseModel):
+    background: list[dict[str, tuple[int, int, int]]]  # noqa:WPS234
+    edge_area_min: int = 0
+    edge_area_max: int = 0
